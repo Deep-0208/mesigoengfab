@@ -1,0 +1,330 @@
+@import 'tailwindcss';
+
+/*
+ * Mesigo Eng Fab design tokens: dark industrial, derived from the logo.
+ *
+ * Logo sampling (assets-src/indiamart/logo-site.png):
+ *   orange  #F3902D  (towers / "MESIGO ENG FAB")  -> --color-accent
+ *   gear    #525457  (cog, neutral cool grey)      -> steel lines + the hue of every dark surface
+ *
+ * Surfaces step up from the gear grey's neutral-cool family, never pure black:
+ *   base #111214 < deep #15171a < panel #1c1e21 < raised #24262a
+ * Text: ink #ECEBE7 (15.7:1 on base), muted #A3A6AB (7.7:1), subtle #868A90 (5.4:1;
+ * never on --raised, where it drops to 4.4:1). Accent on base 7.9:1.
+ * Buttons use dark ink on orange (7.8:1). Form-control edges use --edge (>= 3:1, WCAG 1.4.11).
+ *
+ * Shape rule: media, panels and sections are square-cut (0). Only interactive
+ * controls (buttons, inputs, selects) get the 2px radius-sm.
+ */
+@theme {
+  --color-base: #111214;
+  --color-deep: #15171a;
+  --color-panel: #1c1e21;
+  --color-raised: #24262a;
+  --color-line: #2c2f33;
+  --color-steel: #525457;
+  --color-edge: #6e7176;
+  --color-ink: #ecebe7;
+  --color-muted: #a3a6ab;
+  --color-subtle: #868a90;
+  --color-accent: #f3902d;
+  --color-accent-hover: #f7a654;
+  --color-on-accent: #121315;
+  --color-danger: #ff8a7a;
+  /* The assembly video's own studio backdrop (sampled from the frames). */
+  --color-studio: #c4c5c8;
+
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-sm: 2px;
+
+  --ease-machined: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  color-scheme: dark;
+  /* Sticky header (64px) + breathing room for in-page anchors. */
+  scroll-padding-top: 4.5rem;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background: var(--color-base);
+  color: var(--color-ink);
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+@utility btn {
+  @apply inline-flex min-h-12 items-center justify-center gap-2.5 rounded-sm px-6 font-sans text-[0.95rem] font-medium whitespace-nowrap transition-[background-color,color,border-color,transform] duration-300 ease-(--ease-machined) active:translate-y-px;
+}
+
+@utility display {
+  @apply font-display font-medium tracking-[-0.025em] text-balance text-ink;
+}
+
+@layer components {
+  .btn-primary {
+    @apply btn bg-accent text-on-accent hover:bg-accent-hover;
+  }
+  .btn-ghost {
+    @apply btn border border-steel text-ink hover:border-ink hover:bg-ink hover:text-on-accent;
+  }
+  .container-x {
+    @apply mx-auto w-full max-w-[84rem] px-5 sm:px-8 lg:px-10;
+  }
+  .section-y {
+    @apply py-20 md:py-28;
+  }
+  .h2 {
+    @apply display text-[2.1rem] leading-[1.05] md:text-[3.25rem];
+  }
+  .eyebrow {
+    @apply font-mono text-xs font-medium tracking-[0.18em] text-accent uppercase;
+  }
+  .tech-label {
+    @apply font-mono text-[0.72rem] tracking-[0.08em] text-subtle uppercase;
+  }
+  /* One grade for all company photos so mixed phone shots read as one set;
+     the full-colour assembly video stays the page's colour centrepiece. */
+  .photo-grade {
+    filter: saturate(0.6) contrast(1.06) brightness(0.88);
+  }
+}
+
+/* Marquee: CSS-only movement, paused on hover/focus, by its toggle, or under reduced motion. */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee 48s linear infinite;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track,
+.marquee[data-paused='true'] .marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/*
+ * Horizontal accordion (Featured Machinery, xl and up). Pure CSS: the hovered or
+ * keyboard-focused slice widens; with neither, the first slice stays open.
+ * Details are always in the DOM (screen readers get everything); only their
+ * visibility changes. Below xl the slices are an exact-fit grid (see Machinery.tsx).
+ */
+@media (min-width: 1280px) {
+  .acc {
+    display: flex;
+    gap: 0.75rem;
+    height: 34rem;
+  }
+  .acc > .acc-item {
+    flex: 1 1 0;
+    min-width: 0;
+    transition: flex-grow 700ms var(--ease-machined);
+  }
+  .acc > .acc-item:hover,
+  .acc > .acc-item:focus-within,
+  .acc:not(:hover):not(:focus-within) > .acc-item:first-child {
+    flex-grow: 3.2;
+  }
+  .acc .acc-detail {
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+  .acc > .acc-item:hover .acc-detail,
+  .acc > .acc-item:focus-within .acc-detail,
+  .acc:not(:hover):not(:focus-within) > .acc-item:first-child .acc-detail {
+    opacity: 1;
+    transition-delay: 250ms;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .acc > .acc-item,
+  .acc .acc-detail {
+    transition: none !important;
+  }
+}
+
+/*
+ * Motion system. Everything is CSS; one IntersectionObserver (RevealOnScroll.tsx)
+ * flags elements as they enter the viewport. Reasons for each effect:
+ *   hero intro      - sets reading order on load (headline, copy, actions, photo)
+ *   [data-reveal]   - sections arrive as you reach them, staggered by --d
+ *   wipe            - photos uncover bottom-up, like a shutter, with a slight settle
+ *   frame           - the assembly video settles into place just before it plays
+ *   rule            - hairlines draw in to show the structure of a list
+ * Without JS, or with prefers-reduced-motion, nothing is hidden and nothing moves.
+ */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+}
+@keyframes line-up {
+  from {
+    transform: translateY(110%);
+  }
+}
+@keyframes settle {
+  from {
+    clip-path: inset(14% 0 0 0);
+    transform: scale(1.06);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hero intro (runs before hydration; pure CSS). */
+  .intro-line {
+    display: block;
+    overflow: hidden;
+    /* room for descenders inside the mask, cancelled out by the negative margin */
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+  .intro-line > span {
+    display: block;
+    animation: line-up 1.1s var(--ease-machined) both;
+    animation-delay: var(--d, 0ms);
+  }
+  .intro {
+    animation: rise 1s var(--ease-machined) both;
+    animation-delay: var(--d, 0ms);
+  }
+  /* Starts partly visible so the hero photo still counts as painted for LCP. */
+  .intro-media {
+    animation: settle 1.4s var(--ease-machined) both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  /* Scroll reveals. Hidden only once the observer has marked the page ready. */
+  html[data-reveal-ready] [data-reveal] {
+    transition:
+      opacity 0.9s var(--ease-machined),
+      transform 0.9s var(--ease-machined);
+    transition-delay: var(--d, 0ms);
+  }
+  html[data-reveal-ready] [data-reveal='up']:not([data-revealed]) {
+    opacity: 0;
+    transform: translateY(1.75rem);
+  }
+  /* The clip sits on the image, not the observed container: a fully clipped
+     target has no visible area, so IntersectionObserver would never report it. */
+  html[data-reveal-ready] [data-reveal='wipe'] img {
+    /* keep Tailwind's hover `scale` transition alongside the reveal */
+    transition:
+      clip-path 1.3s var(--ease-machined),
+      transform 1.6s var(--ease-machined),
+      scale 1s var(--ease-machined);
+    transition-delay: var(--d, 0ms);
+  }
+  html[data-reveal-ready] [data-reveal='wipe']:not([data-revealed]) img {
+    clip-path: inset(100% 0 0 0);
+    transform: scale(1.12);
+  }
+  html[data-reveal-ready] [data-reveal='frame']:not([data-revealed]) {
+    opacity: 0;
+    transform: translateY(2.5rem) scale(0.97);
+  }
+  html[data-reveal-ready] [data-reveal='rule'] {
+    position: relative;
+  }
+  html[data-reveal-ready] [data-reveal='rule']::before {
+    content: '';
+    position: absolute;
+    inset: -1px 0 auto 0;
+    height: 1px;
+    background: var(--color-steel);
+    transform-origin: left;
+    transition: transform 1.2s var(--ease-machined);
+    transition-delay: var(--d, 0ms);
+  }
+  html[data-reveal-ready] [data-reveal='rule']:not([data-revealed]) {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  html[data-reveal-ready] [data-reveal='rule']:not([data-revealed])::before {
+    transform: scaleX(0);
+  }
+  html[data-reveal-ready] [data-reveal='rule'][data-revealed]::before {
+    transform: scaleX(1);
+  }
+
+  /* Arrow nudges on links and buttons: confirms where the action goes. */
+  .nudge-x svg,
+  .nudge-y svg {
+    transition: transform 0.4s var(--ease-machined);
+  }
+  .nudge-x:hover svg,
+  .nudge-x:focus-visible svg {
+    transform: translateX(0.25rem);
+  }
+  .nudge-y:hover svg,
+  .nudge-y:focus-visible svg {
+    transform: translateY(0.2rem);
+  }
+}
+
+/*
+ * Workshop sticky stack: each card recedes (scales back, darkens) while the next
+ * card slides up over it. Driven by the NEXT card's view timeline, shared through
+ * timeline-scope. Progressive: browsers without scroll-driven animations keep the
+ * plain sticky stack. Off below md (cards are not sticky there) and under reduced motion.
+ */
+@keyframes recede {
+  to {
+    scale: 0.93;
+    filter: brightness(0.5);
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .stack {
+      timeline-scope: --stage-2, --stage-3;
+    }
+    .stack > li:nth-child(2) {
+      view-timeline-name: --stage-2;
+    }
+    .stack > li:nth-child(3) {
+      view-timeline-name: --stage-3;
+    }
+    .stack > li:nth-child(1),
+    .stack > li:nth-child(2) {
+      animation: recede linear both;
+      animation-range: entry 0% entry 100%;
+    }
+    .stack > li:nth-child(1) {
+      animation-timeline: --stage-2;
+    }
+    .stack > li:nth-child(2) {
+      animation-timeline: --stage-3;
+    }
+  }
+}
